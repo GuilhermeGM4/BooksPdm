@@ -3,8 +3,11 @@ package com.example.bookspdm.ui
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView.AdapterContextMenuInfo
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,17 +26,18 @@ class MainActivity : AppCompatActivity() {
     private val bookList: MutableList<Book> = mutableListOf()
 
     //Adapter
-    private val bookAdapter: ArrayAdapter<String> by lazy {
+    private val bookAdapter: BookAdapter by lazy {
 //        val bookTitleList: MutableList<String> = mutableListOf()
 //        bookList.forEach{ book -> bookTitleList.add(book.title)}
 //        ArrayAdapter(this, android.R.layout.simple_list_item_1, bookTitleList)
 
-        ArrayAdapter(this, android.R.layout.simple_list_item_1, bookList.run{
-            val bookTitleList: MutableList<String> = mutableListOf()
-            bookList.forEach{ book -> bookTitleList.add(book.title)}
-            this.forEach{ bookTitleList.add(it.title) }
-            bookTitleList
-        })
+//        ArrayAdapter(this, android.R.layout.simple_list_item_1, bookList.run{
+//            val bookTitleList: MutableList<String> = mutableListOf()
+//            bookList.forEach{ book -> bookTitleList.add(book.title)}
+//            this.forEach{ bookTitleList.add(it.title) }
+//            bookTitleList
+//        })
+        BookAdapter(this, bookList)
     }
 
     private lateinit var barl: ActivityResultLauncher<Intent>
@@ -51,9 +55,15 @@ class MainActivity : AppCompatActivity() {
                     result.data?.getParcelableExtra<Book>(Constant.BOOK)
                 }
 
-                book?.let {
-                    bookList.add(it)
-                    bookAdapter.add(it.title)
+                book?.let { receivedBook ->
+                    val position = bookList.indexOfFirst { it.isbn == receivedBook.isbn }
+                    if(position == -1){
+                        bookList.add(receivedBook)
+                    }
+                    else{
+                        bookList[position] = receivedBook
+                    }
+//                    bookAdapter.add(it.title)
                     bookAdapter.notifyDataSetChanged()
                 }
             }
@@ -66,6 +76,8 @@ class MainActivity : AppCompatActivity() {
 
 //        fillBookList()
         amb.booksLV.adapter = bookAdapter
+
+        registerForContextMenu(amb.booksLV)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -80,6 +92,33 @@ class MainActivity : AppCompatActivity() {
             true
         }
         else -> false
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu?,
+        v: View?,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) = menuInflater.inflate(R.menu.context_menu_main, menu)
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val position = (item.menuInfo as AdapterContextMenuInfo).position
+        return when (item.itemId){
+            R.id.editBookMI -> {
+                //Chamar tela de edicao de livro
+                Intent(this, BookActivity::class.java).apply {
+                    putExtra(BOOK, bookList[position])
+                    barl.launch(this)
+                }
+                true
+            }
+            R.id.removeBookMI -> {
+                //Remover livro da lista
+                bookList.removeAt(position)
+                bookAdapter.notifyDataSetChanged()
+                true
+            }
+            else -> false
+        }
     }
 
     private fun fillBookList(){

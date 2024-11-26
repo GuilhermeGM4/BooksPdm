@@ -19,8 +19,23 @@ class BookActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(abb.root)
 
+        val receivedBook = intent.getParcelableExtra<Book>(Constant.BOOK)
+        receivedBook?.let {book ->
+            with(abb){
+                with(book){
+                    titleET.setText(title)
+                    isbnET.setText(isbn)
+                    isbnET.isEnabled = false
+                    firstAuthorET.setText(firstAuthor)
+                    publisherET.setText(publisher)
+                    editionET.setText(edition.toString())
+                    pagesET.setText(pages.toString())
+                }
+            }
+        }
+
         abb.toolbarIn.toolbar.let {
-            it.subtitle = "New Book"
+            it.subtitle = if (receivedBook == null) "New Book" else "Edit book"
             setSupportActionBar(it)
         }
 
