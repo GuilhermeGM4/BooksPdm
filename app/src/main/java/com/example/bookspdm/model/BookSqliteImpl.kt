@@ -3,6 +3,7 @@ package com.example.bookspdm.model
 import android.content.ContentValues
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.example.bookspdm.R
@@ -45,11 +46,36 @@ class BookSqliteImpl(context: Context): BookDao {
         bookDatabase.insert(BOOK_TABLE, null, bookToContentValues(book))
 
     override fun retrieveBook(isbn: String): Book {
-        TODO("Not yet implemented")
+//        val cursor = bookDatabase.rawQuery("SELECT * FROM $BOOK_TABLE WHERE $ISBN_COLUMN = ?", arrayOf(isbn)) equivalent to below
+        val cursor = bookDatabase.query(
+            true,
+            BOOK_TABLE,
+            null, //null is equivalent to * from SQL
+            "$ISBN_COLUMN = ?",
+            arrayOf(isbn),
+            null,
+            null,
+            null,
+            null
+        )
+
+        return if(cursor.moveToFirst()){
+            cursorToBook(cursor)
+        }
+        else {
+            Book()
+        }
     }
 
     override fun retrieveBooks(): MutableList<Book> {
-        TODO("Not yet implemented")
+        val bookList = mutableListOf<Book>()
+
+        val cursor = bookDatabase.rawQuery("SELECT * FROM $BOOK_TABLE", null)
+        while (cursor.moveToNext()) {
+            bookList.add(cursorToBook(cursor))
+        }
+
+        return bookList
     }
 
     override fun updateBook(book: Book) = bookDatabase.update(
@@ -74,5 +100,16 @@ class BookSqliteImpl(context: Context): BookDao {
             put(EDITION_COLUMN, edition)
             put(PAGES_COLUMN, pages)
         }
+    }
+
+    private fun cursorToBook(cursor: Cursor) = with(cursor) {
+        Book(
+            getString(getColumnIndexOrThrow(TITLE_COLUMN)),
+            getString(getColumnIndexOrThrow(ISBN_COLUMN)),
+            getString(getColumnIndexOrThrow(FIRST_AUTHOR_COLUMN)),
+            getString(getColumnIndexOrThrow(PUBLISHER_COLUMN)),
+            getInt(getColumnIndexOrThrow(EDITION_COLUMN)),
+            getInt(getColumnIndexOrThrow(PAGES_COLUMN))
+        )
     }
 }

@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.bookspdm.R
+import com.example.bookspdm.controller.MainController
 import com.example.bookspdm.databinding.ActivityMainBinding
 import com.example.bookspdm.model.Book
 import com.example.bookspdm.model.Constant
@@ -41,6 +42,11 @@ class MainActivity : AppCompatActivity() {
         BookAdapter(this, bookList)
     }
 
+    //Controller
+    private val mainController: MainController by lazy {
+        MainController(this)
+    }
+
     private lateinit var barl: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,9 +66,11 @@ class MainActivity : AppCompatActivity() {
                     val position = bookList.indexOfFirst { it.isbn == receivedBook.isbn }
                     if(position == -1){
                         bookList.add(receivedBook)
+                        mainController.insertBook(receivedBook)
                     }
                     else{
                         bookList[position] = receivedBook
+                        mainController.modifyBook(receivedBook)
                     }
 //                    bookAdapter.add(it.title)
                     bookAdapter.notifyDataSetChanged()
@@ -122,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.removeBookMI -> {
                 //Remover livro da lista
+                mainController.removeBook(bookList[position].isbn)
                 bookList.removeAt(position)
                 bookAdapter.notifyDataSetChanged()
                 true
@@ -131,17 +140,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fillBookList(){
-        for(index in 1..50){
-            bookList.add(
-                Book(
-                    "Title $index",
-                    "ISBN$index",
-                    "Author $index",
-                    "Publisher $index",
-                    index,
-                    index*100
-                )
-            )
-        }
+//        for(index in 1..50){
+//            bookList.add(
+//                Book(
+//                    "Title $index",
+//                    "ISBN$index",
+//                    "Author $index",
+//                    "Publisher $index",
+//                    index,
+//                    index*100
+//                )
+//            )
+//        }
+        Thread {
+            bookList.clear()
+            bookList.addAll(mainController.getBooks())
+            bookAdapter.notifyDataSetChanged()
+        }.start()
     }
 }
