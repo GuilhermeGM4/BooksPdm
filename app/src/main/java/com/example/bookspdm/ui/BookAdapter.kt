@@ -30,7 +30,7 @@ class BookAdapter(
 
         //Verificando se a celula ja foi inflada ou nao.
         var bookTile = convertView
-        if(book == null) {
+        if(bookTile == null) {
             //Se nao foi, infla uma nova celula
             tbb = TileBookBinding.inflate(
                 context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater,
@@ -57,7 +57,7 @@ class BookAdapter(
         }
 
         //Preenche os valores da celula com um novo livro
-        val holder = bookTile?.tag as BookTileHolder
+        val holder = bookTile.tag as BookTileHolder
         holder.let {
             it.titleTV.text = book.title
             it.firstAuthorTV.text = book.firstAuthor
@@ -68,6 +68,6 @@ class BookAdapter(
 //        bookTile?.findViewById<TextView>(R.id.editionTV)?.text = book.edition.toString()
 
         //Retorna a celula preenchida
-        return bookTile!!
+        return bookTile
     }
 }

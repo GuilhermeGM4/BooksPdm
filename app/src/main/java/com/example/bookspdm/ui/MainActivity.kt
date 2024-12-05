@@ -19,6 +19,7 @@ import com.example.bookspdm.model.Book
 import com.example.bookspdm.model.Constant
 import com.example.bookspdm.model.Constant.BOOK
 import com.example.bookspdm.model.Constant.VIEW_MODE
+
 class MainActivity : AppCompatActivity() {
     private val amb: ActivityMainBinding by lazy{
         ActivityMainBinding.inflate(layoutInflater)
@@ -84,9 +85,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         fillBookList()
+
         amb.booksLV.adapter = bookAdapter
         amb.booksLV.setOnItemClickListener { _, _, position, _ ->
-            val book = bookList[position]
             Intent(this, BookActivity::class.java).apply{
                 putExtra(BOOK, bookList[position])
                 putExtra(VIEW_MODE, true)
@@ -102,13 +103,15 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId){
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId){
         R.id.addBookMI -> {
             //Abrir tela para adicionar novo livro
             barl.launch(Intent(this, BookActivity::class.java))
             true
         }
-        else -> false
+        else -> {
+            false
+        }
     }
 
     override fun onCreateContextMenu(
@@ -124,6 +127,7 @@ class MainActivity : AppCompatActivity() {
                 //Chamar tela de edicao de livro
                 Intent(this, BookActivity::class.java).apply {
                     putExtra(BOOK, bookList[position])
+                    putExtra(VIEW_MODE, false)
                     barl.launch(this)
                 }
                 true
@@ -135,7 +139,9 @@ class MainActivity : AppCompatActivity() {
                 bookAdapter.notifyDataSetChanged()
                 true
             }
-            else -> false
+            else -> {
+                false
+            }
         }
     }
 
@@ -153,9 +159,11 @@ class MainActivity : AppCompatActivity() {
 //            )
 //        }
         Thread {
-            bookList.clear()
-            bookList.addAll(mainController.getBooks())
-            bookAdapter.notifyDataSetChanged()
+            runOnUiThread {
+                bookList.clear()
+                bookList.addAll(mainController.getBooks())
+                bookAdapter.notifyDataSetChanged()
+            }
         }.start()
     }
 }

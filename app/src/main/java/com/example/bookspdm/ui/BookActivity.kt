@@ -37,7 +37,6 @@ class BookActivity : AppCompatActivity() {
                     pagesET.setText(pages.toString())
 
                     titleET.isEnabled = !viewMode
-                    isbnET.isEnabled = !viewMode
                     firstAuthorET.isEnabled =!viewMode
                     publisherET.isEnabled =!viewMode
                     editionET.isEnabled =!viewMode
@@ -69,7 +68,7 @@ class BookActivity : AppCompatActivity() {
 
         abb.run {
             SaveBt.setOnClickListener {
-                val newBook = Book(
+                Book(
                     titleET.text.toString(),
                     isbnET.text.toString(),
                     firstAuthorET.text.toString(),
